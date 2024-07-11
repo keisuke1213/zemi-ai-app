@@ -1,7 +1,7 @@
 import { Chat } from "./chat/chat";
 import { MapPage } from "./map/MapPage";
 
-export default function () {
+export default function HomePage() {
 
   return (
     <div>

@@ -36,14 +36,6 @@ export const Chat = () => {
 
     return (
         <Container maxWidth="xl">
-            <div>
-                {chatHistory.map((chat, index) => (
-                    <div key={index}>
-                        <p>{chat.prompt}</p>
-                        <p>{chat.response}</p>
-                    </div>
-                ))}
-            </div>
             <form onSubmit={handleSubmit}>
                 <TextField
                     value={prompt}
@@ -53,6 +45,14 @@ export const Chat = () => {
                 />
                 <Button variant="contained" type="submit">送信</Button>
             </form>
+            <div>
+                {chatHistory.map((chat, index) => (
+                    <div key={index}>
+                        <p>{chat.prompt}</p>
+                        <p>{chat.response}</p>
+                    </div>
+                ))}
+            </div>
         </Container>
     );
 };
