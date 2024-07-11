@@ -1,5 +1,6 @@
 'use client';
 import { useState } from "react";
+import { TextField, Container,Button } from '@mui/material'
 
 export const Chat = () => {
     const [prompt, setPrompt] = useState("");
@@ -21,15 +22,15 @@ export const Chat = () => {
  };
 
  return (
-    <div>
+    <Container maxWidth="xl">
         <form onSubmit={handleSubmit}>
-            <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)}></textarea>
-            <button type="submit">Submit</button>
+            <TextField value={prompt} label="質問してみよう" variant="outlined" onChange={(e) => setPrompt(e.target.value)}></TextField>
+            <Button variant="contained" type="submit">送信</Button>
         </form>
         <div>
             <h3>Response:</h3>
             <p>{response}</p>
         </div>
-    </div>
+    </Container>
  );
 }

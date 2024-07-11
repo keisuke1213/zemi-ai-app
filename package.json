@@ -9,6 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@mui/material": "^5.16.0",
+    "@types/google.maps": "^3.55.11",
     "next": "14.2.5",
     "openai": "^4.52.5",
     "react": "^18",
