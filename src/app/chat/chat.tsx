@@ -16,7 +16,8 @@ export const Chat = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(async (position) => {
                 const location = `${position.coords.latitude},${position.coords.longitude}`;
-                const res = await fetch('/api/chat', {
+                console.log(location);
+                const res = await fetch('/api/recommend', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -25,7 +26,8 @@ export const Chat = () => {
                 });
 
                 const data = await res.json();
-                setChatHistory((prevHistory) => [...prevHistory, data]);
+                console.log(data);
+                setChatHistory((prevHistory) => [data, ...prevHistory]);
             }, (error) => {
                 console.error('Geolocation error:', error);
             });
