@@ -8,36 +8,57 @@ type Conversation = {
 };
 
 export const Chat = () => {
+
     const [prompt, setPrompt] = useState("");
     const [chatHistory, setChatHistory] = useState<Conversation[]>([]);
+    const [places, setPlaces] = useState([]);
 
-    const handleSubmit = async (e: any) => {
-        e.preventDefault();
+    const handleClick = async(type:string) => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(async (position) => {
                 const location = `${position.coords.latitude},${position.coords.longitude}`;
                 console.log(location);
-                const res = await fetch('/api/recommend', {
+                const res = await fetch('/api/googleMaps', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ prompt, location }),
+                    body: JSON.stringify({ type, location }),
                 });
 
                 const data = await res.json();
-                console.log(data);
-                setChatHistory((prevHistory) => [data, ...prevHistory]);
+                setPlaces(data);
+        
             }, (error) => {
                 console.error('Geolocation error:', error);
             });
         } else {
             console.error('Geolocation is not available');
         }
-    };
+    }
+    
+
+    const handleSubmit = async (e: any) => {
+        e.preventDefault();
+                const res = await fetch('/api/chatGpt', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ places, prompt }),
+                });
+                console.log(places);
+
+                const data = await res.json();
+                console.log(data);
+                setChatHistory((prevHistory) => [data, ...prevHistory]);
+            }
 
     return (
         <Container maxWidth="xl">
+            <Button onClick={()=> {handleClick('restaurant')}}>レストラン</Button>
+            <Button onClick={() => {handleClick('cafe')}}>カフェ</Button>
+            <Button onClick={()=> {handleClick('park')}}>公園</Button>
             <form onSubmit={handleSubmit}>
                 <TextField
                     value={prompt}
