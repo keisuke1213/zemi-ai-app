@@ -34,10 +34,13 @@ export default async function handler(req:NextApiRequest,res:NextApiResponse) {
 
     let locations: Location[] = []
     locations = places;
+    console.log(places)
 
     const placeDescriptions = locations.map(location  => {
         return `名前: ${location.name}, 評価: ${location.rating}, 住所: ${location.vicinity}, 種類: ${location.types.join(', ')}, 価格帯: ${location.price_level},口コミ:${location.reference},営業時間:${location.opening_hours}`;
     }).join('\n');
+
+
 
     let conversation;
 
@@ -86,7 +89,7 @@ export default async function handler(req:NextApiRequest,res:NextApiResponse) {
         console.log(placeNames);
         const detailedPlaces = [];
         for(const name of placeNames) {
-            const placeDetails = await fetch(`https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${name}&inputtype=textquery&fields=name,rating,types,price_level,reference,opening_hours,geometry&key=${process.env.GOOGLE_MAPS_APIKEY}`)
+            const placeDetails = await fetch(`https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${name}&inputtype=textquery&fields=name,rating,types,price_level,reference,opening_hours,geometry&key=${process.env.GOOGLE_MAPS_API_KEY}`)
             const placeData = await placeDetails.json();
             console.log(placeData);
             if(placeData.candidates && placeData.candidates.length > 0) {

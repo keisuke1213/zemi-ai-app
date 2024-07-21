@@ -11,9 +11,10 @@ export default async function handler(req:NextApiRequest,res:NextApiResponse) {
         return res.status(405).json({ message: 'Only POST requests are allowed' });
     }
 
-    const {type,location} = req.body;
+    const {type,curLocation} = req.body;
+    console.log(type,curLocation);
     
-    const apiKey = process.env.GOOGLE_MAPS_APIKEY;
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
     if (typeof apiKey !== 'string') {
         // エラーレスポンスを返すか、適切なエラーハンドリングを行う
         res.status(500).json({ error: 'Google Maps API key is not defined.' });
@@ -22,7 +23,7 @@ export default async function handler(req:NextApiRequest,res:NextApiResponse) {
     }
     
     const queryParams = new URLSearchParams({
-        location: location,
+        location: curLocation,
         radius: '5000',
         type: type,
         key: apiKey,
