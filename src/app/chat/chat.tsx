@@ -10,6 +10,7 @@ type Conversation = {
 };
 
 export interface Spot {
+  id: string;
   name: string;
   geometry: {
     location: {
@@ -27,6 +28,7 @@ export const Chat = () => {
   const [places, setPlaces] = useState<any[]>([]);
   const [curLocation, setCurLocation] = useState<string>('');
   const [spots, setSpots] = useState<Spot[]>([]);
+  const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
 
   useEffect(() => {
     loadGoogleMapsAPI(setMap);
@@ -69,12 +71,36 @@ export const Chat = () => {
     const data = await res.json();
     setConversationId(data.conversationId);
     setChatHistory((prevHistory) => [data, ...prevHistory]);
-    setSpots(data.detailedPlaces);
+    
+    const spotsWithId = data.detailedPlaces.map((spot: Spot, index: number) => ({
+      ...spot,
+      id: `spot-${index}`,
+    }));
+    setSpots(spotsWithId);
   };
+
+  const handleDirections = async(destination: google.maps.LatLngLiteral) => {
+    if(curLocation) {
+      console.log('Hello World!')
+      const directionsService = new google.maps.DirectionsService();
+      directionsService.route({
+        origin: curLocation,
+        destination: destination,
+        travelMode: google.maps.TravelMode.WALKING,
+      }, (result, status) => {
+        if(status === google.maps.DirectionsStatus.OK) {
+          setDirections(result);
+        } else {
+          console.error(`Direction request failed due to ${status}`);
+        }
+      });
+    }
+    }
+
 
   return (
     <Container maxWidth="xl">
-      <ShowMap spots={spots} />
+      <ShowMap spots={spots}  directions={directions} onRequestDirections={handleDirections} />
       <Button onClick={() => handleClick('restaurant')}>レストラン</Button>
       <Button onClick={() => handleClick('cafe')}>カフェ</Button>
       <Button onClick={() => handleClick('park')}>公園</Button>
