@@ -1,11 +1,7 @@
-import { Chat } from "./chat/chat";
+import { UserInfo } from "./userInfo/userInfo";
 
-
-export default function HomePage() {
-
-  return (
-    <div>
-      <Chat />
-    </div>
-  );
+export default function InfoPage(){
+    return (
+        <UserInfo />
+    )
 }
