@@ -10,16 +10,14 @@ interface UserAnswersContextProps {
  const UserAnswersContext = createContext<UserAnswersContextProps | undefined>(undefined);
 
 export const UserAnswersProvider = ({ children }: { children: ReactNode }) => {
-  const [answers, setAnswers] = useState<{ [key: string]: string }>
-  (() => {
-    const savedAnswers = localStorage.getItem('userAnswers');
-    return savedAnswers ? JSON.parse(savedAnswers) : {};
-  });
-
+  const [answers, setAnswers] = useState<{ [key: string]: string }>({})
+  
   useEffect(() => {
-    localStorage.setItem('userAnswers', JSON.stringify(answers));
-  }, [answers]);
-
+    const savedAnswers = localStorage.getItem('userAnswers');
+    if (savedAnswers) {
+      setAnswers(JSON.parse(savedAnswers));
+    }
+  }, []);
 
   return (
     <UserAnswersContext.Provider value={{ answers, setAnswers }}>
