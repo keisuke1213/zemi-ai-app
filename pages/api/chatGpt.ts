@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { NextApiRequest,NextApiResponse } from "next";
 import { PrismaClient } from "@prisma/client";
+import { count } from "console";
 
 const prisma = new PrismaClient();
 
@@ -8,7 +9,7 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
-interface Location {
+interface Place {
     name: string;
     types: string[];
     rating: number;
@@ -23,6 +24,20 @@ interface Message {
     content: string;
 }
 
+interface Prompts {
+    key: number;
+    value: string;
+}
+
+interface countChat {
+    countChat: number;
+}
+
+interface Place {
+    name: string;
+    rating: number;
+    vicinity: string;
+}
 
 
 export default async function handler(req:NextApiRequest,res:NextApiResponse) {
@@ -30,16 +45,58 @@ export default async function handler(req:NextApiRequest,res:NextApiResponse) {
         return res.status(405).json({ message: 'Only POST requests are allowed' });
     }
 
-    const {prompt,places,conversationId,curLocation} = req.body;
+    const {prompt,conversationId,curLocation,countChat,answers,type} = req.body;
 
-    let locations: Location[] = []
-    locations = places;
-    console.log(places)
+    let places: Place[] = []
 
-    const placeDescriptions = locations.map(location  => {
-        return `名前: ${location.name}, 評価: ${location.rating}, 住所: ${location.vicinity}, 種類: ${location.types.join(', ')}, 価格帯: ${location.price_level},口コミ:${location.reference},営業時間:${location.opening_hours}`;
+
+    console.log(curLocation);
+
+    if(type) {
+        const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+        if (typeof apiKey !== 'string') {
+            res.status(500).json({ error: 'Google Maps API key is not defined.' });
+            console.log('Google Maps API key is not defined.')
+            return;
+        }
+        const queryParams = new URLSearchParams({
+            location: curLocation,
+            radius: '5000',
+            type: type,
+            key: apiKey,
+        }).toString();
+
+
+
+        try {
+            const googleResponse = await fetch(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?${queryParams}`);
+            if (!googleResponse.ok) {
+                console.error(`Google Maps API error: ${googleResponse.status}`);
+                return res.status(googleResponse.status).json({ error: 'Failed to fetch from Google Places API' });
+            }
+
+            const responseJson = await googleResponse.json();
+
+            if (responseJson.status !== 'OK') {
+                console.error(`Google Maps API error: ${responseJson.status}`);
+                return res.status(500).json({ error: `Google Maps API error: ${responseJson.status}` });
+            }
+
+            places = responseJson.results;
+
+        
+        } catch (error) {
+            console.error('Error fetching from Google Places API:', error);
+            return res.status(500).json({ error: 'Internal server error while fetching from Google Places API' });
+        }
+  }
+
+
+    const placeDescriptions = places.map(place  => {
+        return `名前: ${place.name}, 評価: ${place.rating}, 住所: ${place.vicinity}, 種類: ${place.types.join(', ')}, 価格帯: ${place.price_level},口コミ:${place.reference},営業時間:${place.opening_hours}`;
     }).join('\n');
 
+    console.log(placeDescriptions);
 
 
     let conversation;
@@ -59,20 +116,61 @@ export default async function handler(req:NextApiRequest,res:NextApiResponse) {
         content: msg.content
     })) 
 
-    const aiPrompt = `
-    ユーザーの質問: ${prompt}
-    ユーザーの現在位置: ${curLocation}
+    const prompts :Prompts[] = [
+    { key: 0, value:  "ユーザーに今の気分を聞いてください"},
+    { key: 1, value: "ユーザーの入力、 現在位置、事前情報をもとにおすすめの場所を提示してください。場所の名前は必ず「」で囲ってください。場所を提案する時は理由も述べて。" },
+]
 
-    以下の場所の中から、ユーザーにヒアリングをしたうえで最適な場所を提案してください。ユーザーから質問が抽象的であれば、場所の提案はせずに、具体的な回答が得られるように質問してください。その際、提示する理由も教えてください。
-    場所の住所は、伝えなくていいです。また、場所の種類や価格帯、評価、口コミ、営業時間などの情報を提供してください。
-    提案する場所の名前は必ず「」で囲ってください。
+    const selectedPrompt = prompts.find((prompt) => prompt.key === countChat)
+    
+    let aiPrompt: string;
 
-    場所情報:
-    ${placeDescriptions}
 
-    以下は過去の会話です。これを踏まえて回答してください。
-    ${pastMessages?.map((msg) => `${msg.role === 'user' ? 'ユーザー' : 'AI'}: ${msg.content}`).join('\n')}
-    `;
+    if (selectedPrompt) {
+        // countChatが3以下の場合、指定された指示を含むプロンプトを作成
+        aiPrompt = `
+        ユーザーの入力: ${prompt}
+        ユーザーの現在位置: ${curLocation}
+        ユーザーの事前情報: ${answers}
+        場所情報:
+        ${placeDescriptions}
+        あなたへの指示: ${selectedPrompt.value}
+    
+        以下は過去の会話です。これを踏まえて回答してください。
+        ${pastMessages?.map((msg) => `${msg.role === 'user' ? 'ユーザー' : 'AI'}: ${msg.content}`).join('\n')}
+        `;
+    } else {
+        // countChatが3を超えた場合、自由に会話をさせる
+        aiPrompt = `
+        ユーザーの入力: ${prompt}
+        ユーザーの現在位置: ${curLocation}
+        ユーザーの事前情報: ${answers}
+        場所情報:
+        ${placeDescriptions}
+        これらの情報を踏まえて、ユーザーに対して自由に会話をしてください。
+        以下は過去の会話です。これを踏まえて回答してください。
+        ${pastMessages?.map((msg) => `${msg.role === 'user' ? 'ユーザー' : 'AI'}: ${msg.content}`).join('\n')}
+        `;
+    }
+    
+
+    
+
+
+    // const aiPrompt = `
+    // ユーザーの質問: ${prompt}
+    // ユーザーの現在位置: ${curLocation}
+
+    // 以下の場所の中から、ユーザーにヒアリングをしたうえで最適な場所を提案してください。ユーザーから質問が抽象的であれば、場所の提案はせずに、具体的な回答が得られるように質問してください。その際、提示する理由も教えてください。
+    // 場所の住所は、伝えなくていいです。また、場所の種類や価格帯、評価、口コミ、営業時間などの情報を提供してください。
+    // 提案する場所の名前は必ず「」で囲ってください。
+
+    // 場所情報:
+    // ${placeDescriptions}
+
+    // 以下は過去の会話です。これを踏まえて回答してください。
+    // ${pastMessages?.map((msg) => `${msg.role === 'user' ? 'ユーザー' : 'AI'}: ${msg.content}`).join('\n')}
+    // `;
 
 
    
@@ -86,7 +184,6 @@ export default async function handler(req:NextApiRequest,res:NextApiResponse) {
         const responseContent = completion.choices[0].message.content;
         
         const placeNames = responseContent?.match(/「.*?」/g)?.map((name) => name.slice(1, -1)) || [];
-        console.log(placeNames);
         const detailedPlaces = [];
         for(const name of placeNames) {
             const placeDetails = await fetch(`https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${name}&inputtype=textquery&fields=name,rating,types,price_level,reference,opening_hours,geometry&key=${process.env.GOOGLE_MAPS_API_KEY}`)
@@ -96,7 +193,6 @@ export default async function handler(req:NextApiRequest,res:NextApiResponse) {
                 detailedPlaces.push(placeData.candidates[0]);
             }
         }
-        console.log(detailedPlaces);
 
     if(typeof conversationId !== 'undefined' && conversation) {
         await prisma.message.createMany({

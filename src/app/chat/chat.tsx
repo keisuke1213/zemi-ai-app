@@ -112,12 +112,13 @@ export const Chat = () => {
     const data = await res.json();
     setCountChat(countChat + 1);
     setConversationId(data.conversationId);
-    setChatHistory((prevHistory) => [data, ...prevHistory]);
-    
+    setChatHistory((prevHistory) => [...prevHistory,data]);
+    console.log(data.detailedPlaces);
     const spotsWithId = data.detailedPlaces.map((spot: Spot, index: number) => ({
       ...spot,
       id: `spot-${index}`,
     }));
+
     setSpots(spotsWithId);
   };
 
@@ -141,7 +142,6 @@ export const Chat = () => {
     }
     }
 
-    console.log(type)
 
   return (
     <Container maxWidth="xl">
