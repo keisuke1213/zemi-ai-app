@@ -1,0 +1,118 @@
+html, body {
+    height: 100vh;
+    margin: 0;
+    background-color: #03cbda; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.vertical-text {
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    color: white;
+    letter-spacing: 5px;
+  }
+  
+/*SetAiTypeコンポーネント*/
+
+  .background-color {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .container {
+    width: 300px;
+    margin: 0 auto;
+    padding: 20px;/* 背景色の設定 */
+    border-radius: 10px; /* 角の丸み */
+    text-align: center;
+    height: 100%;
+  }
+  
+  .title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #fff;
+  }
+  
+  .subtitle {
+    font-size: 14px;
+    color: #fff;
+  }
+  
+  .options {
+    margin: 20px 0;
+  }
+  
+  .option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    border: 2px solid transparent;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    background-color: #fff;
+  }
+  
+  .option.green {
+    border-color: #00FF00;
+  }
+  
+  .option.yellow {
+    border-color: #FFD700;
+  }
+  
+  .option.pink {
+    border-color: #FF1493;
+  }
+  
+  .icon {
+    font-size: 30px;
+    margin-right: 10px;
+  }
+  
+  .label {
+    font-size: 16px;
+  }
+  
+  .confirm-button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color: #fff;
+    color: #000;
+    border: 2px solid #000;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s, transform 0.1s;
+  }
+  
+  .confirm-button:hover {
+    background-color: #ddd;
+  }
+
+  .confirm-button:active {
+    transform: scale(0.98); /* クリック時に少し縮小する */
+  }
+
+  .reset-button {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  } 
+  .reset-button:hover {
+    opacity: 0.8; /* ホバー時に少し透明にする */
+  }
+  
+  .reset-button:active {
+    transform: scale(0.95); /* クリック時に少し縮小する */
+  }
+  

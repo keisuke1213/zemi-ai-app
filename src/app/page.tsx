@@ -58,21 +58,33 @@ const SelectAiType = () => {
         <p className="subtitle">どんな相手とパートナーになる？</p>
         <div className="options">
 
-        <div className="reset-button" role="button" >
+        <div
+            className={`reset-button ${selectedOption === 'father' ? 'selected' : ''}`}
+            role="button"
+            onClick={() => handleOptionClick('father')}
+         >
           <div className="option green">
             <div className="icon">👨‍🦳</div>
             <div className="label">物静かな お父さん</div>
           </div>
         </div>
 
-        <div className="reset-button" role="button" >
+        <div
+            className={`reset-button ${selectedOption === 'father' ? 'selected' : ''}`}
+            role="button"
+            onClick={() => handleOptionClick('father')}
+         >
           <div className="option yellow">
             <div className="icon">👵</div>
             <div className="label">なんでも知ってる 優しいおばあちゃん</div>
           </div>
         </div>  
 
-        <div className="reset-button" role="button" >  
+        <div 
+            className={`reset-button ${selectedOption === 'father' ? 'selected' : ''}`}
+            role="button"
+            onClick={() => handleOptionClick('father')}
+        >  
           <div className="option pink">
             <div className="icon">👩</div>
             <div className="label">おしゃべり好きな 流行女子</div>
@@ -80,7 +92,7 @@ const SelectAiType = () => {
         </div>
 
         </div>
-        <button className="confirm-button confirm-button:active confirm-button:hover">決定</button>
+        <button className="confirm-button confirm-button:active confirm-button:hover" onClick={handleConfirmClick}>決定</button>
       </div>
     );
   }
