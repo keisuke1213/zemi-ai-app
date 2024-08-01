@@ -1,0 +1,99 @@
+/* Global Styles */
+.body {
+    font-family: Arial, sans-serif;
+    /* Bright blue background for the whole page */
+    margin: 0 0 30px 0;
+    padding: 0;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #333;
+    height: 100%;/* Full viewport height */
+    background-color: #03cbda; 
+}
+
+.container { /* Center the container */
+     /* Consistent with the body's background */
+    height: 100%; /* Full viewport height */
+    display: flex; /* Using flex to organize children vertically */
+    flex-direction: column; /* Stack children vertically */
+}
+
+/* Specific Component Styles */
+.map-container {
+    width: 100%; /* Full width of its container */
+    margin-top: 30px;
+}
+
+.chat-display {
+    flex-grow: 4; /* Takes the remaining 40% of the space */
+    overflow-y: auto; /* Allows scrolling for overflow content */
+    background-color: #f0f0f0; /* Light grey background for chat display */
+    margin: 15px auto 30px auto;
+    height: 100x;
+}
+
+.button-container {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0; /* Added padding for better visual spacing */
+}
+
+.option-button, .start-button {
+    background-color: #FFD700; /* Yellow background for buttons */
+    color: black; /* Text color */
+    border-radius: 5px; /* Rounded corners */
+    padding: 10px 20px; /* Padding for better touch area */
+    margin: 5px; /* Space between buttons */
+    cursor: pointer; /* Cursor indicates clickable items */
+    transition: background-color 0.3s; /* Smooth transition for hover effect */
+}
+
+.option-button:hover, .start-button:hover {
+    background-color: #FFA500; /* Darker yellow on hover */
+}
+
+.start-button {
+    margin: 0 auto;
+}
+
+.chat-bubble {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 15px;
+}
+
+.chat-bubble.ai {
+    background-color: #FFEB3B; /* Yellow background for AI */
+    flex-direction: row; /* AI messages align to the left */
+}
+
+.chat-bubble.user {
+    background-color: #ADFF2F; /* Light green background for user */
+    flex-direction: row-reverse; /* User messages align to the right */
+}
+
+.avatar {
+    background-color: #FFD700; /* Yellow background for avatar */
+    color: black; /* Text color */
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%; /* Circular avatar */
+    margin: 0 10px;
+}
+
+.message {
+    max-width: 70%;
+    word-wrap: break-word;
+    margin-right: 10px;
+}
+.right-aligned-form {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 15px;
+  }

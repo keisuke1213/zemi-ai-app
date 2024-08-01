@@ -1,11 +1,14 @@
 // UserInfo.tsx
 "use client"
-import {useState } from 'react';
+import { useState } from 'react';
 import { useUserAnswers } from '../context/UserAnswersContext';
+import { useRouter } from 'next/navigation';
+import './userInfo.css';
 
 export const UserInfo = () => {
   const { answers, setAnswers } = useUserAnswers();
   const [currentQuestion, setCurrentQuestion] = useState<number>(0);
+  const router = useRouter();
 
   const questions = [
     { question: "歩くのは好きですか？", options: ["はい", "いいえ"] },
@@ -13,37 +16,34 @@ export const UserInfo = () => {
     { question: "運動が好きですか？", options: ["はい", "いいえ"] },
     { question: "寄り道の時間は？", options: ["1時間以内", "1時間から2時間", "2時間以上"] },
     { question: "新しいことにチャレンジするのは好きですか？", options: ["はい", "いいえ"] },
+    { question: "好きな食べ物のジャンルは？", options: ["中華", "イタリアン", "和食", "洋食"] },
   ];
 
-  const handleClick = (answer: string) => {
-    const questionKey = questions[currentQuestion].question;
-    setAnswers(prevAnswers => ({
-      ...prevAnswers,
-      [questionKey]: answer
-    }));
-    setCurrentQuestion(prev => prev + 1);
-  }
-
-  console.log(answers);
+  const handleAnswer = (answer: string) => {
+    setAnswers(prev => ({ ...prev, [currentQuestion]: answer }));
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+    } else {
+      router.push('/chat');
+    }
+  };
 
   return (
-    <div>
-      <h1>ユーザー情報</h1>
-      {currentQuestion < questions.length ? (
-        <div>
-          <h3>{questions[currentQuestion].question}</h3>
-          {questions[currentQuestion].options.map(option => (
-            <button key={option} onClick={() => handleClick(option)}>{option}</button>
-          ))}
-        </div>
-      ) : (
-        <div>
-          <h2>回答結果</h2>
-          {Object.keys(answers).map((question, index) => (
-            <p key={index}>{question}: {answers[question]}</p>
-          ))}
-        </div>
-      )}
+    <div className="container">
+      <div className="question-number">質問{currentQuestion + 1}</div>
+      <div className="question">{questions[currentQuestion].question}</div>
+      <div className="options">
+        {questions[currentQuestion].options.map(option => (
+          <button key={option} className="option-button" onClick={() => handleAnswer(option)}>
+            {option}
+          </button>
+        ))}
+      </div>
+      <div className="pagination">
+        {questions.map((_, index) => (
+          <div key={index} className={`dot ${index === currentQuestion ? 'active' : ''}`}>{index + 1}</div>
+        ))}
+      </div>
     </div>
   );
 };

@@ -39,6 +39,11 @@ interface Place {
     vicinity: string;
 }
 
+interface UserInfo {
+    question: string;
+    response: string;
+}
+
 
 export default async function handler(req:NextApiRequest,res:NextApiResponse) {
     if (req.method !== 'POST') {
@@ -48,9 +53,14 @@ export default async function handler(req:NextApiRequest,res:NextApiResponse) {
     const {prompt,conversationId,curLocation,countChat,answers,type} = req.body;
 
     let places: Place[] = []
+    
+    const userInfos = [answers]
+    
+    const separatedAnswers = Object.entries(userInfos[0]).map(([question, response]) => ({
+        [question]: response
+      }));
 
 
-    console.log(curLocation);
 
     if(type) {
         const apiKey = process.env.GOOGLE_MAPS_API_KEY;
@@ -96,7 +106,7 @@ export default async function handler(req:NextApiRequest,res:NextApiResponse) {
         return `名前: ${place.name}, 評価: ${place.rating}, 住所: ${place.vicinity}, 種類: ${place.types.join(', ')}, 価格帯: ${place.price_level},口コミ:${place.reference},営業時間:${place.opening_hours}`;
     }).join('\n');
 
-    console.log(placeDescriptions);
+    
 
 
     let conversation;
@@ -117,41 +127,34 @@ export default async function handler(req:NextApiRequest,res:NextApiResponse) {
     })) 
 
     const prompts :Prompts[] = [
-    { key: 0, value:  "ユーザーに今の気分を聞いてください"},
-    { key: 1, value: "ユーザーの入力、 現在位置、事前情報をもとにおすすめの場所を提示してください。場所の名前は必ず「」で囲ってください。場所を提案する時は理由も述べて。" },
+    { key: 0, value:  "今日もお疲れ様！どういった場所に行きたいですか？とユーザーに質問して。" },
+    { key: 1, value: "ユーザーの入力、 現在位置、事前情報,場所情報をもとにおすすめの場所を1つ提示してください。場所の名前は必ず「」で囲ってください。場所と提案理由を簡潔に述べください。" },
 ]
 
     const selectedPrompt = prompts.find((prompt) => prompt.key === countChat)
-    
-    let aiPrompt: string;
 
 
-    if (selectedPrompt) {
-        // countChatが3以下の場合、指定された指示を含むプロンプトを作成
-        aiPrompt = `
+
+    const aiPrompt = `
         ユーザーの入力: ${prompt}
-        ユーザーの現在位置: ${curLocation}
-        ユーザーの事前情報: ${answers}
+        現在位置: ${curLocation}
+        ユーザーの事前情報: ${separatedAnswers.map((ans) => `Q: ${ans.question} A: ${ans.response}`).join(', ')}
+
         場所情報:
-        ${placeDescriptions}
-        あなたへの指示: ${selectedPrompt.value}
-    
-        以下は過去の会話です。これを踏まえて回答してください。
+        ${places.map((place) => `
+        名前: ${place.name}
+        評価: ${place.rating}
+        住所: ${place.vicinity}
+        `).join('\n')}
+
+        あなたの指示:
+        ${selectedPrompt ? selectedPrompt.value : 'ユーザーの入力、現在位置、事前情報、場所情報をもとに自由に会話してください。ただし、場所を提案する時は場所の名前は「」で必ず囲ってください。'}
+        話し方はなんでも知ってるおばあちゃんでお願い。
+
+        過去の会話:
         ${pastMessages?.map((msg) => `${msg.role === 'user' ? 'ユーザー' : 'AI'}: ${msg.content}`).join('\n')}
-        `;
-    } else {
-        // countChatが3を超えた場合、自由に会話をさせる
-        aiPrompt = `
-        ユーザーの入力: ${prompt}
-        ユーザーの現在位置: ${curLocation}
-        ユーザーの事前情報: ${answers}
-        場所情報:
-        ${placeDescriptions}
-        これらの情報を踏まえて、ユーザーに対して自由に会話をしてください。
-        以下は過去の会話です。これを踏まえて回答してください。
-        ${pastMessages?.map((msg) => `${msg.role === 'user' ? 'ユーザー' : 'AI'}: ${msg.content}`).join('\n')}
-        `;
-    }
+    `;
+
     
 
     

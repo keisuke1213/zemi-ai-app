@@ -6,6 +6,7 @@ import { ShowMap } from '../map/ShowMap';
 import { UserAnswersProvider } from '../context/UserAnswersContext';
 import { useUserAnswers } from '../context/UserAnswersContext';
 import React, { FC } from 'react';
+import "./chat.css"
 
 
 type Conversation = {
@@ -37,7 +38,12 @@ interface SelectButtonProps {
   handleSubmit: (e: any) => Promise<void>;
 }
 
-
+interface ChatProps {
+  chatHistory: Conversation[];
+  countChat: number;
+  setType: React.Dispatch<React.SetStateAction<string>>;
+  handleSubmit: (e: any) => Promise<void>;
+}
 
 export const Chat = () => {
   const [map, setMap] = useState<google.maps.Map | null>(null);
@@ -51,6 +57,7 @@ export const Chat = () => {
   const [countChat, setCountChat] = useState<number>(0);
   const [type, setType] = useState<string>('');
   const { answers } = useUserAnswers();
+  console.log(answers);
 
   useEffect(() => {
     loadGoogleMapsAPI(setMap);
@@ -113,7 +120,7 @@ export const Chat = () => {
     setCountChat(countChat + 1);
     setConversationId(data.conversationId);
     setChatHistory((prevHistory) => [...prevHistory,data]);
-    console.log(data.detailedPlaces);
+    console.log(data);
     const spotsWithId = data.detailedPlaces.map((spot: Spot, index: number) => ({
       ...spot,
       id: `spot-${index}`,
@@ -126,7 +133,6 @@ export const Chat = () => {
 
   const handleDirections = async(destination: google.maps.LatLngLiteral) => {
     if(curLocation) {
-      console.log('Hello World!')
       const directionsService = new google.maps.DirectionsService();
       directionsService.route({
         origin: curLocation,
@@ -144,17 +150,20 @@ export const Chat = () => {
 
 
   return (
-    <Container maxWidth="xl">
+    <Container maxWidth="xl" className='container'>
+      <div className="map-container">
       <ShowMap spots={spots}  directions={directions} onRequestDirections={handleDirections} />
-      <DisplayChat chatHistory={chatHistory} />
+      </div>
+      <DisplayChat chatHistory={chatHistory} countChat={countChat} setType={setType} handleSubmit={handleSubmit} />
       {countChat === 0 ? (
-        <StartButton  handleSubmit={handleSubmit} /> 
+        <StartButton  handleSubmit={handleSubmit}  /> 
       ) : (
         (
-          countChat === 1 ? <SelectButton setType={setType} handleSubmit={handleSubmit} /> 
-          : <ChatForm handleSubmit={handleSubmit} prompt={prompt} setPrompt={setPrompt} chatHistory={chatHistory} />
+          countChat === 1 ? (<SelectButton setType={setType} handleSubmit={handleSubmit} /> 
+          ) : <ChatForm handleSubmit={handleSubmit} prompt={prompt} setPrompt={setPrompt} chatHistory={chatHistory} />
         )
       )}
+      {/* </div> */}
       </Container>
   );
 };
@@ -162,18 +171,24 @@ export const Chat = () => {
 
 const StartButton: FC<{ handleSubmit: (e: any) => Promise<void>}> = ({handleSubmit}) => {
   return (
-    <Button onClick={handleSubmit}>チャットを開始</Button>
+    <Button onClick={handleSubmit} sx={{text: 'center'}}>チャットを開始</Button>
   )
 }
 
 
-const DisplayChat: FC<{chatHistory: Conversation[]}> = ({chatHistory}) => {
+const DisplayChat: FC<ChatProps> = ({chatHistory, countChat, setType, handleSubmit}) => {
   return (
     <div>
       {chatHistory.map((chat, index) => (
-        <div key={index}>
-          <p>{chat.prompt}</p>
-          <p>{chat.response}</p>
+        <div className="chat-display" key={index}>
+        <div className="chat-bubble ai">
+          <p className="avatar">AI</p>
+          <p className="message">{chat.response}</p>
+        </div>
+        <div className="chat-bubble user">
+          <p className="avatar">ユーザー</p>
+          <p className="message">{chat.prompt}</p>
+        </div>
         </div>
       ))}
     </div>
@@ -183,14 +198,14 @@ const DisplayChat: FC<{chatHistory: Conversation[]}> = ({chatHistory}) => {
 const ChatForm: FC<ChatFormProps> = ({handleSubmit, prompt, setPrompt, chatHistory}) => {
   return (
     <div>
-  <form onSubmit={handleSubmit}>
+  <form onSubmit={handleSubmit} className="right-aligned-form">
       <TextField
         value={prompt}
         label="質問してみよう"
         variant="outlined"
         onChange={(e) => setPrompt(e.target.value)}
       />
-      <Button variant="contained" type="submit">送信</Button>
+      <Button sx={{mx: 2}} variant="contained" type="submit">送信</Button>
     </form>
   </div>
   )
@@ -199,10 +214,13 @@ const ChatForm: FC<ChatFormProps> = ({handleSubmit, prompt, setPrompt, chatHisto
 const SelectButton: FC<SelectButtonProps> = ({handleSubmit,setType}) => {
   
   return (
-    <Container sx={{mt: 5}}>
-    <Button onClick={() => setType("restaurant")}>レストラン</Button>
-    {/* <Button onClick={() => handleClick('cafe')}>カフェ</Button>
-    <Button onClick={() => handleClick('park')}>公園</Button> */}
+    <Container sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
+    <Button sx={{ml: 1}} variant='outlined' onClick={() => setType("restaurant")}>レストラン</Button>
+    <Button sx={{ml: 1}} variant='outlined' onClick={() => setType("cafe")}>カフェ</Button>
+    <Button sx={{ml: 1}} variant='outlined' onClick={() => setType("bar")}>バー</Button>
+    <Button sx={{ml: 1}} variant='outlined' onClick={() => setType("park")}>公園</Button>
+    <Button sx={{ml: 1}} variant='outlined' onClick={() => setType("museum")}>美術館</Button>
+    <Button sx={{ml: 1}} variant='outlined' onClick={() => setType("amusement_park")}>遊園地</Button>
     </Container>
   )
 }

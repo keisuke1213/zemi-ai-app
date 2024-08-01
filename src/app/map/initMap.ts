@@ -5,9 +5,9 @@ export const initMap = async (
   
     if (mapElement) {
       const map = new google.maps.Map(mapElement, {
-        zoom: 16,
+        zoom: 13,
         mapId: 'DEMO_MAP_ID',
-        maxZoom: 25,
+        maxZoom: 12,
         center: { lat: 35.021242, lng: 135.755613 },//東京駅を中心
       })
   
